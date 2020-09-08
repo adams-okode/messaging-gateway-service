@@ -1,3 +1,8 @@
 {
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "markdown-pdf.headerTemplate": "<span class='title' style='display: none;'></span>",
+    "markdown-pdf.footerTemplate": "<span class='title' style='display: none;'></span>",
+    "markdown-pdf.styles": [
+        "markdown.css"
+    ]
 }
