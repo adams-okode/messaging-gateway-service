@@ -1,0 +1,5 @@
+{"properties": [{
+  "name": "decoded",
+  "type": "com.decoded.messaging.ApplicationConfig",
+  "description": "A description for 'decoded.africastalking.username'"
+}]}
