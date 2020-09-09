@@ -1,13 +1,22 @@
-# How To Build a Full Featured, Event Driven, Notification Service With Spring Boot and Redis
+# How To Build a Full Featured, Message Driven, Notification Service With Spring Boot and Redis
 
 ## Introduction 
-An event can be defined as an action or status change, that can be observed and further trigger subsequent actions to complete a given task.
-At the very base of event driven system is the concept of producing events and listening for said event to make an informed decision on what to do next.
-One way of achieving/implementing event driven architectures is by using PUB/SUB event buses/or protocols to communicate between services.
-Event driven systems are highly scalable as they reduce the load of having to get immediate responses for each request.
+
+Message Driven architectures are a part of a larger concept known as reactive programming(asynchronous systems). Asynchronous programming is quite critical to creating a truly scalable platform, where various services can communicate with each other easily, can scale up and down independently, and where a service failure won’t be catastrophic i.e. causing system wide down time.
+
+___Messages vs Events___
+
+While the two are closely related and often use the same architecture, there are some core differences. 
+
+A message can be defined as an item of data that is sent, and intended for a specific destination. In a Message driven system recepients await message arrival and react to them accordingly.
+
+An event on the other can be defined as an action or change in state, that can be observed and further trigger different actions in different recepients.
+
+One way of achieving/implementing message driven architectures is by using PUB/SUB event buses/or protocols to communicate between services.
+Message driven systems are highly scalable as they reduce the load of having to get immediate responses for each request.
 
 ## What You'll Learn
-- Basic Implementation of PUB/SUB queues
+- Basic Implementation of PUB/SUB
 - Redis Basic Configuration
 - Spring Boot Redis Integration
 
@@ -16,11 +25,10 @@ To follow this tutorial, you should have basic knowledge of working with:
 - Spring Boot
 - Docker
 - Git
-
-
+  
 ## Key Tools and Components 
 - Redis
-- Pub / Sub
+- Pub/Sub
 
 ## The workflow
 ![WorkFlow](https://raw.githubusercontent.com/adams-okode/messaging-gateway-service/master/Event%20Driven%20Arcitecture.png)
@@ -33,7 +41,7 @@ The figure above shows components involved: Service A (Generates events), Notifi
 Connect to MySQL instance of choice.
 
 ### Redis
-We'll set up Redis to run on a docker container for testing pusrposes
+We'll set up Redis to run on a docker container for testing purposes.
 Folder Structure
 ```bash
 ├── Dockerfile
@@ -56,9 +64,8 @@ RUN chmod +x entrypoint.sh
 
 redis.conf
 ```conf
-bind 0.0.0.0
 maxmemory-policy allkeys-lru
-requirepass {your-redis-server}
+requirepass {your-redis-password}
 ```
 
 entrypoint.sh
@@ -161,8 +168,8 @@ spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
 **Step 3 Configuration**
 Let's start by adding the redis configuration.
 
-First Well Define a ___MessageListenerAdapter___. this delegates the handling of messages to target listener methods through reflection, with flexible message type conversion.
-This bean defines the subscriber in the pub-sub messaging model, currently the handler function is defined as "onMessage" you can customize this to something else.
+First Well Define a ___MessageListenerAdapter___ this delegates the handling of messages to the target listener methods through reflection, with flexible message type conversion.
+This bean defines the subscriber in the pub-sub messaging model, currently the handler function is defined as "onMessage" you can customize this to something of your own choosing.
 ```java
 @Bean
 MessageListenerAdapter messageListener(RedisMessageSubscriber subscriber) {
@@ -199,7 +206,7 @@ MessagePublisher redisPublisher() {
     return new RedisMessagePublisher(redisTemplate(), topic());
 }
 ```
-Next is to define Redis template to allow key/value data handlling this will also allow us define the serialization scheme. The below configuration will Serialize the values to Json before publishing, this will also be used to deserialize at the subscriber instance.
+Next is to define Redis template to allow key/value data handling, this will also allow us define the serialization scheme. The below configuration will Serialize the values to Json before publishing, this can also be used to deserialize at the subscriber instance.
 
 ```java
 @Bean
@@ -334,7 +341,7 @@ public class MessageRedisDto implements Serializable {
 }
 ```
 
-Since we have spring data rest within the installed packages well expose some methods directly from the repository.
+Since we have spring data rest within the installed packages we'll expose a few methods directly from the repository.
 
 ```java
 import {your-packaging}.Message;
@@ -377,7 +384,7 @@ public interface MessageRepository extends CrudRepository<Message, Long> {
 
 *Define the Event Processor*
 
-The Event Processor performs tasks triggered by events in this case out task will be actually sending the notification using 3rd Party integrations.
+The Event Processor performs tasks triggered by events in this case our task will actually be sending the notification using preconfigured 3rd Party integrations.
 ```java
 import java.io.IOException;
 import java.util.List;
@@ -519,7 +526,7 @@ public class RedisMessagePublisher implements MessagePublisher {
 
 *Define Sample Controller/Service for Testing*
 
-Define the sample Service Method
+Define the sample service Method to subulate the PUB section of the queue.
 
 ```java
 @Autowired
@@ -541,7 +548,7 @@ public MessageRedisDto logMessage(MessageRedisDto messageRequest) {
 }
 ```
 
-Define the sample Controller
+Define the sample controller.
 ```java
 import {your-packaging}.MessageRedisDto;
 import {your-packaging}.SmsMessagingService;
@@ -577,4 +584,25 @@ public class MessageController {
 }
 ```
 
+## Testing things out
+View Redis Logs
+
+run command below to redis attached terminal to view activity 
+
+```bash
+redis-cli -a {password} monitor
+```
+![redis](https://raw.githubusercontent.com/adams-okode/messaging-gateway-service/master/redis-console.png)
+
+Run Spring boot and open swagger to test a sample message
+![Sample Request](https://raw.githubusercontent.com/adams-okode/messaging-gateway-service/master/request.png)
+
+## Conclusion
+Both enterprise and middleware vendors have began embracing even-driven architecture, the recent years witnessing a huge growth in corporate interest in adopting message and event-driven systems. In this article, we have gone through a simple messaging system implemented on redis PUB/SUB configuration.
+Other event 
+
+
+
+### Quickstart
+To get you started you can quickly pull the [repo](https://github.com/adams-okode/messaging-gateway-service) showcasing this full tutorial and run. 
 
